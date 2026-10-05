@@ -172,7 +172,7 @@ class JobStoreTests(unittest.TestCase):
         stale = self.root / "jobs" / "3f2b8c1e-5d4a-4b7e-9c11-2a6f0d9e8b73"
         stale.mkdir()
         (stale / "input.csv").write_text("partial")
-        old = (datetime.now() - timedelta(days=2)).timestamp()
+        old = (datetime.now(timezone.utc) - timedelta(days=2)).timestamp()
         import os
         os.utime(stale, (old, old))
         self.store.cleanup_expired()
