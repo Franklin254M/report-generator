@@ -1,0 +1,30 @@
+# Cleaning rules. Edit this file to support a new client's format; no code change needed.
+# Bump rules_version whenever anything below changes, so old reports stay explainable.
+rules_version: "1.0"
+
+required_columns:
+  date: [date, transaction_date, txn_date, posted_date]
+  amount: [amount, amt, transaction_amount, value]
+
+null_tokens: ["", "nan", "none", "null", "n/a"]
+
+date:
+  default_order: month          # month or day; only affects slash dates like 03/04/23
+  formats_any_order: ["%Y-%m-%d", "%d-%m-%Y", "%B %d, %Y", "%b %d, %Y"]
+  slash_formats:
+    month: ["%m/%d/%Y", "%m/%d/%y"]
+    day: ["%d/%m/%Y", "%d/%m/%y"]
+
+amount:
+  currency_symbols: ["$"]
+  currency_words: ["USD"]
+  parentheses_are_negative: true
+
+booleans:
+  true_values: ["y", "yes", "1", "true"]
+  false_values: ["n", "no", "0", "false"]
+
+outliers:
+  method: iqr                   # flag only, never delete
+  multiplier: 1.5
+  min_values: 4

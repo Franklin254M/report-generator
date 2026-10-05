@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data cleaner</title>
+<meta name="description" content="Upload a messy CSV and get a cleaned file, a summary report, and a log of every change.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="idle">
+<div class="bg" aria-hidden="true"><div class="blob b1"></div><div class="blob b2"></div></div>
+<header class="bar">
+  <span class="brand">Data cleaner</span>
+  <span class="muted">Files are deleted after 24 hours</span>
+</header>
+<main id="view" tabindex="-1"></main>
+<p id="live" class="sr-only" role="status" aria-live="polite"></p>
+<footer class="foot">
+  Built by <a href="https://github.com/Franklin254M/portfolio" rel="noopener noreferrer">Frank Mutua Ndolo</a>
+</footer>
+<noscript><p class="noscript">This tool needs JavaScript to upload files.</p></noscript>
+<script src="app.js"></script>
+</body>
+</html>

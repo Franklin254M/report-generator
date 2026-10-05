@@ -1,0 +1,22 @@
+transaction_id,date,merchant,category,amount,account_type,is_recurring,notes,amount_outlier_flag
+T001,2023-01-15,Starbucks,Dining,12.5,checking,True,,False
+T002,2023-01-02,Amazon,Shopping,1200.0,credit,False,,True
+T003,2023-10-28,Costco Wholesale,Groceries,85.2,savings,True,weekly,False
+T004,2024-03-05,Netflix,Subscriptions,15.99,credit,True,,False
+T005,2023-12-25,Target,Shopping,-45.0,checking,False,refund,True
+T006,,Uber,Transport,22.0,checking,,,False
+T007,,Uber,Transport,18.0,checking,False,,False
+T008,2023-02-01,Shell,Transport,,savings,True,,False
+T009,2023-02-02,Shell,Transport,,savings,True,,False
+T010,2023-03-01,Walmart,Shopping,40.0,credit,True,,False
+T011,2023-04-01,Shop A,Shopping,20.0,credit,False,,False
+T012,2023-04-02,Shop A,Shopping,25.0,credit,False,,False
+T013,2023-04-03,Shop A,Shopping,30.0,credit,False,,False
+T014,2023-04-04,Shop A,Shopping,35.0,credit,False,,False
+T015,2023-04-05,Shop A,Shopping,40.0,credit,False,,False
+T016,2023-04-06,Shop A,Shopping,45.0,credit,False,,False
+T017,2023-04-07,Shop A,Shopping,50.0,credit,False,,False
+T018,2023-04-08,Shop A,Shopping,55.0,credit,False,,False
+T019,2023-04-09,Shop A,Shopping,60.0,credit,False,,False
+T020,2023-04-10,Shop A,Shopping,65.0,credit,False,,False
+T021,2023-05-01,Apple,Shopping,5000.0,credit,False,,True
