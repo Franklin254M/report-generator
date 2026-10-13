@@ -2,23 +2,652 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Data cleaner</title>
-<meta name="description" content="Upload a messy CSV and get a cleaned file, a summary report, and a log of every change.">
-<link rel="stylesheet" href="style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frank Mutua Ndolo — Computer Science Student</title>
+<meta name="description" content="Portfolio of Frank Mutua Ndolo — Computer Science student specializing in software development, networking, and cybersecurity.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink: #10151b;
+    --panel: #171e26;
+    --panel-2: #1c242d;
+    --line: #2a343e;
+    --text: #e7ecf0;
+    --text-dim: #8b98a4;
+    --text-dimmer: #5d6b78;
+    --teal: #4fd1c5;
+    --amber: #e8a765;
+    --radius: 3px;
+    --max: 880px;
+    --gap: clamp(2.5rem, 6vw, 5rem);
+  }
+
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+
+  body{
+    margin:0;
+    background: var(--ink);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .mono{ font-family: 'IBM Plex Mono', monospace; }
+
+  a{ color: inherit; }
+
+  ::selection{ background: var(--teal); color: var(--ink); }
+
+  :focus-visible{
+    outline: 2px solid var(--teal);
+    outline-offset: 3px;
+  }
+
+  .wrap{
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 0 1.75rem;
+  }
+
+  /* ---------- NAV ---------- */
+  header.site{
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: rgba(16,21,27,0.86);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+  nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 0.9rem 0;
+  }
+  .nav-mark{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.95rem;
+    letter-spacing:0.02em;
+    color: var(--teal);
+    text-decoration:none;
+  }
+  .nav-links{
+    display:flex;
+    gap:1.6rem;
+    list-style:none;
+    margin:0; padding:0;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.82rem;
+  }
+  .nav-links a{
+    text-decoration:none;
+    color: var(--text-dim);
+    transition: color .15s ease;
+  }
+  .nav-links a:hover{ color: var(--text); }
+  .nav-toggle{ display:none; }
+
+  @media (max-width: 620px){
+    .nav-links{ display:none; }
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position: relative;
+    padding: clamp(3.5rem, 9vw, 6.5rem) 0 clamp(2.5rem, 6vw, 4rem);
+    overflow: hidden;
+  }
+  #netCanvas{
+    position:absolute;
+    top: -10%;
+    right: -8%;
+    width: 60%;
+    height: 130%;
+    opacity: 0.55;
+    pointer-events:none;
+  }
+  @media (max-width: 760px){
+    #netCanvas{ opacity: 0.28; width: 90%; }
+  }
+
+  .eyebrow-line{
+    display:flex;
+    align-items:center;
+    gap: 0.6rem;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--teal);
+    margin-bottom: 1.4rem;
+  }
+  .eyebrow-line .dot{
+    width:6px; height:6px; border-radius:50%;
+    background: var(--teal);
+    box-shadow: 0 0 8px var(--teal);
+  }
+
+  .hero h1{
+    font-size: clamp(2.4rem, 6.5vw, 4rem);
+    line-height: 1.05;
+    margin: 0 0 1.1rem;
+    font-weight: 600;
+    max-width: 14ch;
+    position: relative;
+    z-index: 2;
+  }
+
+  .hero .role{
+    font-size: clamp(1.05rem, 2.4vw, 1.3rem);
+    color: var(--text-dim);
+    max-width: 42ch;
+    margin: 0 0 1.6rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  .hero p.lede{
+    max-width: 56ch;
+    color: var(--text-dim);
+    font-size: 1rem;
+    margin: 0 0 2.2rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  .contact-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap: 0.7rem;
+    position: relative;
+    z-index: 2;
+  }
+  .chip{
+    display:inline-flex;
+    align-items:center;
+    gap:0.45rem;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+    padding: 0.55rem 0.9rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    text-decoration:none;
+    color: var(--text);
+    background: var(--panel);
+    transition: border-color .15s ease, transform .15s ease;
+  }
+  .chip:hover{
+    border-color: var(--teal);
+    transform: translateY(-1px);
+  }
+  .chip .k{ color: var(--text-dimmer); }
+
+  /* ---------- SECTION GENERIC ---------- */
+  section{
+    padding: var(--gap) 0;
+    border-top: 1px solid var(--line);
+  }
+  .section-head{
+    display:flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2.2rem;
+  }
+  .section-head h2{
+    font-size: clamp(1.4rem, 3vw, 1.8rem);
+    margin: 0;
+    font-weight: 600;
+  }
+  .section-num{
+    font-family:'IBM Plex Mono', monospace;
+    color: var(--text-dimmer);
+    font-size: 0.85rem;
+  }
+
+  /* ---------- ABOUT ---------- */
+  .about-grid{
+    display:grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 2.5rem;
+  }
+  @media (max-width: 700px){
+    .about-grid{ grid-template-columns: 1fr; }
+  }
+  .about-grid p{ color: var(--text-dim); max-width: 58ch; }
+  .fact-list{
+    list-style:none; margin:0; padding:0;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    border-left: 1px solid var(--line);
+  }
+  .fact-list li{
+    padding: 0.55rem 0 0.55rem 1rem;
+    display:flex;
+    justify-content: space-between;
+    gap: 1rem;
+    color: var(--text-dim);
+  }
+  .fact-list li span:last-child{ color: var(--text); text-align:right; }
+
+  /* ---------- SKILLS ---------- */
+  .skill-groups{
+    display:grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem 2.5rem;
+  }
+  @media (max-width: 620px){
+    .skill-groups{ grid-template-columns: 1fr; }
+  }
+  .skill-group h3{
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-dim);
+    margin: 0 0 0.9rem;
+  }
+  .tag-row{
+    display:flex; flex-wrap:wrap; gap: 0.5rem;
+  }
+  .tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+    padding: 0.4rem 0.7rem;
+    border-radius: var(--radius);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--text);
+  }
+
+  /* ---------- PROJECTS ---------- */
+  .project{
+    display:grid;
+    grid-template-columns: 30% 1fr;
+    gap: 1.5rem;
+    padding: 1.8rem 0;
+    border-top: 1px solid var(--line);
+  }
+  .project:first-child{ border-top: none; padding-top: 0; }
+  @media (max-width: 700px){
+    .project{ grid-template-columns: 1fr; gap: 0.6rem; }
+  }
+  .project-name{
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 0.4rem;
+  }
+  .project-tags{
+    display:flex; flex-wrap:wrap; gap:0.4rem;
+    margin-top: 0.9rem;
+  }
+  .project-tags span{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--teal);
+    border: 1px solid rgba(79,209,197,0.35);
+    padding: 0.22rem 0.5rem;
+    border-radius: var(--radius);
+  }
+  .project p{ color: var(--text-dim); margin: 0; max-width: 60ch; }
+
+  .project-result{ margin-top:0.7rem !important; color: var(--text) !important; font-size:0.92rem; }
+  .project-links{ margin-top:0.9rem; display:flex; gap:1rem; font-family:'IBM Plex Mono', monospace; font-size:0.8rem; }
+  .project-links a{ color: var(--amber); }
+
+  /* ---------- EXPERIENCE ---------- */
+  .xp-entry{
+    display:grid;
+    grid-template-columns: 200px 1fr;
+    gap: 1.5rem;
+  }
+  @media (max-width: 620px){
+    .xp-entry{ grid-template-columns: 1fr; gap: 0.4rem; }
+  }
+  .xp-date{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--text-dimmer);
+  }
+  .xp-role{ font-weight: 600; margin: 0 0 0.5rem; }
+  .xp-entry ul{ margin: 0.6rem 0 0; padding-left: 1.1rem; color: var(--text-dim); }
+  .xp-entry li{ margin-bottom: 0.35rem; }
+
+  /* ---------- EDU / CERTS ---------- */
+  .two-col{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+  }
+  @media (max-width: 700px){
+    .two-col{ grid-template-columns: 1fr; }
+  }
+  .card{
+    border: 1px solid var(--line);
+    border-left: 2px solid var(--amber);
+    border-radius: var(--radius);
+    padding: 1.3rem 1.4rem;
+    background: var(--panel);
+    margin-bottom: 1rem;
+  }
+  .card h3{ margin: 0 0 0.3rem; font-size: 1rem; }
+  .card .meta{ color: var(--text-dimmer); font-size: 0.82rem; font-family:'IBM Plex Mono', monospace; margin-bottom: 0.6rem;}
+  .card p{ margin:0; color: var(--text-dim); font-size: 0.92rem; }
+
+  /* ---------- EXTRA ---------- */
+  .extra-list{
+    display:flex; flex-wrap:wrap; gap: 0.6rem;
+  }
+
+  /* ---------- CONTACT / FOOTER ---------- */
+  footer{
+    padding: var(--gap) 0 3rem;
+    border-top: 1px solid var(--line);
+  }
+  footer h2{ font-size: clamp(1.6rem, 4vw, 2.3rem); margin: 0 0 1rem; max-width: 18ch; }
+  footer p{ color: var(--text-dim); max-width: 50ch; margin-bottom: 2rem; }
+  .foot-bottom{
+    display:flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--text-dimmer);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior: auto; }
+  }
+</style>
 </head>
-<body class="idle">
-<div class="bg" aria-hidden="true"><div class="blob b1"></div><div class="blob b2"></div></div>
-<header class="bar">
-  <span class="brand">Data cleaner</span>
-  <span class="muted">Files are deleted after 24 hours</span>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <nav>
+      <a class="nav-mark" href="#top">fmn/</a>
+      <ul class="nav-links">
+        <li><a href="#about">About</a></li>
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#experience">Experience</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+  </div>
 </header>
-<main id="view" tabindex="-1"></main>
-<p id="live" class="sr-only" role="status" aria-live="polite"></p>
-<footer class="foot">
-  Built by <a href="https://github.com/Franklin254M/portfolio" rel="noopener noreferrer">Frank Mutua Ndolo</a>
+
+<main>
+  <section class="hero" id="top">
+    <canvas id="netCanvas"></canvas>
+    <div class="wrap">
+      <div class="eyebrow-line"><span class="dot"></span><span>Available for industrial attachment</span></div>
+      <h1>Frank Mutua Ndolo</h1>
+      <p class="role">Computer Science student building software, securing networks, and figuring out how systems actually work.</p>
+      <p class="lede">BSc. Mathematics &amp; Computer Science student at JKUAT, focused on software development, networking, and cybersecurity — looking for hands-on experience applying that to real problems.</p>
+      <div class="contact-row">
+        <a class="chip" href="mailto:franklinmutua254@gmail.com"><span class="k">mail</span> franklinmutua254@gmail.com</a>
+        <a class="chip" href="tel:+254797635335"><span class="k">tel</span> +254 797 635 335</a>
+        <a class="chip" href="https://github.com/Franklin254M/portfolio" id="githubChip" target="_blank" rel="noopener noreferrer"><span class="k">git</span> github.com/Franklin254M/portfolio</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="about">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>About</h2>
+        <span class="section-num mono">01</span>
+      </div>
+      <div class="about-grid">
+        <p>I'm a proactive Computer Science student seeking an industrial attachment to gain hands-on experience in software development, networking, and IT support. I'm passionate about problem-solving and cybersecurity, and I like applying technical skills to real-world challenges rather than just coursework.</p>
+        <ul class="fact-list">
+          <li><span>Institution</span><span>JKUAT</span></li>
+          <li><span>Programme</span><span>BSc. Maths &amp; CS</span></li>
+          <li><span>Open to</span><span>Attachment &amp; freelance</span></li>
+          <li><span>Based in</span><span>Kenya</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="skills">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Skills</h2>
+        <span class="section-num mono">02</span>
+      </div>
+      <div class="skill-groups">
+        <div class="skill-group">
+          <h3>Programming</h3>
+          <div class="tag-row">
+            <span class="tag">Python</span><span class="tag">Java</span><span class="tag">C++</span><span class="tag">JavaScript</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <h3>Networking</h3>
+          <div class="tag-row">
+            <span class="tag">TCP/IP</span><span class="tag">Subnetting</span><span class="tag">Routing</span><span class="tag">Switching</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <h3>Databases &amp; web</h3>
+          <div class="tag-row">
+            <span class="tag">MySQL</span><span class="tag">HTML</span><span class="tag">CSS</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <h3>Other</h3>
+          <div class="tag-row">
+            <span class="tag">Cybersecurity basics</span><span class="tag">Cloud computing</span><span class="tag">IT support</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="projects">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Projects</h2>
+        <span class="section-num mono">03</span>
+      </div>
+
+      <div class="project">
+        <div>
+          <p class="project-name">Report Generator</p>
+        </div>
+        <div>
+          <p>Messy transaction exports (5,075 rows) came with mixed date and currency formats, duplicates, and missing values. I built a Python pipeline with a web page and an API that cleans the file without inventing data, then produces an Excel report, a PDF summary, and a log of every change.</p>
+          <p class="project-result">Result: 50 duplicates removed, 227 unusual amounts flagged (not deleted), every change logged. 47 automated tests with CI on GitHub Actions.</p>
+          <div class="project-tags"><span>Python</span><span>FastAPI</span><span>pandas</span><span>Excel &amp; PDF reports</span><span>GitHub Actions</span></div>
+          <div class="project-links"><a href="https://github.com/Franklin254M/report-generator" target="_blank" rel="noopener noreferrer">Code on GitHub</a></div>
+        </div>
+      </div>
+
+      <!-- TO ADD A PROJECT: copy a whole <div class="project">...</div> block. Use: problem, what you did, result, tags, repo/demo link. -->
+
+      <div class="project">
+        <div>
+          <p class="project-name">Student Management System</p>
+        </div>
+        <div>
+          <p>Designed a database system for student records, including authentication and reporting functionality.</p>
+          <div class="project-tags"><span>Python</span><span>MySQL</span></div>
+        </div>
+      </div>
+
+      <div class="project">
+        <div>
+          <p class="project-name">Network Traffic Analyzer</p>
+        </div>
+        <div>
+          <p>Captured and analyzed network packets for security insights — inspecting traffic patterns to flag anomalies.</p>
+          <div class="project-tags"><span>Python</span><span>Networking</span></div>
+        </div>
+      </div>
+
+      <div class="project">
+        <div>
+          <p class="project-name">This site</p>
+        </div>
+        <div>
+          <p>An earlier version of my personal portfolio was built with HTML, CSS, and JavaScript. This version replaces it — designed and built the same way, to showcase my work and skills.</p>
+          <div class="project-tags"><span>HTML</span><span>CSS</span><span>JavaScript</span></div>
+          <div class="project-links"><a href="https://github.com/Franklin254M/portfolio" target="_blank" rel="noopener noreferrer">Code</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="experience">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Experience</h2>
+        <span class="section-num mono">04</span>
+      </div>
+      <div class="xp-entry">
+        <div class="xp-date">Oct – Nov 2024</div>
+        <div>
+          <p class="xp-role">Enumerator — Ministry of Labour &amp; Social Protection</p>
+          <ul>
+            <li>Conducted surveys and collected data across assigned areas, ensuring high response rates.</li>
+            <li>Used digital tools for data entry and verification.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="education">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Education &amp; certifications</h2>
+        <span class="section-num mono">05</span>
+      </div>
+      <div class="two-col">
+        <div>
+          <div class="card">
+            <h3>BSc. Mathematics &amp; Computer Science</h3>
+            <div class="meta">JKUAT · in progress</div>
+            <p>Relevant coursework: Software Engineering, Networking, Cybersecurity, Database Systems.</p>
+          </div>
+          <div class="card">
+            <h3>Kenya Certificate of Secondary Education</h3>
+            <div class="meta">2022 · Grade B+</div>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <h3>Cisco CCNA v7</h3>
+            <div class="meta">Certification</div>
+            <p>Introduction to Networks, Enterprise Networking &amp; Security.</p>
+          </div>
+          <div class="card">
+            <h3>Certificate in Computer Studies</h3>
+            <div class="meta">Certification</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="extra">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Extracurricular</h2>
+        <span class="section-num mono">06</span>
+      </div>
+      <div class="extra-list">
+        <span class="tag">Cyber Security Club — member</span>
+        <span class="tag">SIAM (Society for Industrial &amp; Applied Mathematics) — member</span>
+        <span class="tag">Hackathons &amp; coding competitions — participant</span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="contact">
+  <div class="wrap">
+    <h2>Let's talk about an attachment or a project.</h2>
+    <p>I'm actively looking for an industrial attachment, and open to freelance or junior developer work involving Python, networking, or databases.</p>
+    <div class="contact-row">
+      <a class="chip" href="mailto:franklinmutua254@gmail.com"><span class="k">mail</span> franklinmutua254@gmail.com</a>
+      <a class="chip" href="tel:+254797635335"><span class="k">tel</span> +254 797 635 335</a>
+    </div>
+    <div class="foot-bottom">
+      <span>Frank Mutua Ndolo</span>
+      <span>Built with HTML, CSS &amp; JS</span>
+    </div>
+  </div>
 </footer>
-<noscript><p class="noscript">This tool needs JavaScript to upload files.</p></noscript>
-<script src="app.js"></script>
+
+<script>
+  // Single orchestrated hero moment: a quiet node network forming behind the headline.
+  (function(){
+    const canvas = document.getElementById('netCanvas');
+    const ctx = canvas.getContext('2d');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let w, h, nodes;
+
+    function resize(){
+      const rect = canvas.getBoundingClientRect();
+      w = canvas.width = rect.width * devicePixelRatio;
+      h = canvas.height = rect.height * devicePixelRatio;
+    }
+
+    function makeNodes(){
+      const count = w < 400 ? 10 : 16;
+      nodes = Array.from({length: count}, () => ({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        vx: (Math.random() - 0.5) * 0.15 * devicePixelRatio,
+        vy: (Math.random() - 0.5) * 0.15 * devicePixelRatio,
+        r: (Math.random() * 1.5 + 1.2) * devicePixelRatio
+      }));
+    }
+
+    function step(){
+      ctx.clearRect(0, 0, w, h);
+      for(const n of nodes){
+        n.x += n.vx; n.y += n.vy;
+        if(n.x < 0 || n.x > w) n.vx *= -1;
+        if(n.y < 0 || n.y > h) n.vy *= -1;
+      }
+      for(let i=0;i<nodes.length;i++){
+        for(let j=i+1;j<nodes.length;j++){
+          const a = nodes[i], b = nodes[j];
+          const d = Math.hypot(a.x-b.x, a.y-b.y);
+          const maxD = 170 * devicePixelRatio;
+          if(d < maxD){
+            ctx.strokeStyle = `rgba(79,209,197,${(1 - d/maxD) * 0.35})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+          }
+        }
+      }
+      for(const n of nodes){
+        ctx.fillStyle = 'rgba(232,167,101,0.9)';
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.r, 0, Math.PI*2);
+        ctx.fill();
+      }
+      if(!reduceMotion) requestAnimationFrame(step);
+    }
+
+    resize();
+    makeNodes();
+    step();
+    window.addEventListener('resize', () => { resize(); makeNodes(); if(reduceMotion) step(); });
+  })();
+</script>
+
 </body>
 </html>

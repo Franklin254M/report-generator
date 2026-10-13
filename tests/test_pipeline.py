@@ -149,6 +149,19 @@ class ExcelAndDetectionTests(Base):
         job = run(SAMPLE, self.tmp / "out", date_order="day")
         self.assertEqual(job["date_order_source"], "chosen")
 
+    def test_pdf_is_listed_after_excel_when_built(self):
+        job = run(SAMPLE, self.tmp / "out")
+        if (self.tmp / "out" / "report.pdf").exists():
+            self.assertEqual(job["files"][:2], ["report.xlsx", "report.pdf"])
+
+    def test_rerun_removes_a_stale_pdf(self):
+        out = self.tmp / "out"
+        run(SAMPLE, out)
+        with mock.patch("app.pipeline.write_pdf", None):
+            job = run(SAMPLE, out)
+        self.assertFalse((out / "report.pdf").exists())
+        self.assertNotIn("report.pdf", job["files"])
+
     def test_excel_failure_still_delivers_csv(self):
         with mock.patch("app.pipeline.write_excel", side_effect=RuntimeError("boom")):
             job = run(SAMPLE, self.tmp / "out")

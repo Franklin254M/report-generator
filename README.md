@@ -1,9 +1,8 @@
 # Report generator
 
-Upload a messy transactions CSV. Get back a cleaned file, an Excel report with totals, a list of rows that need a human look, and a log of every change. Problems are flagged and counted, never silently fixed or hidden.
+Upload a messy transactions CSV. Get back a cleaned file, an Excel report with totals, a short PDF summary, a list of rows that need a human look, and a log of every change. Problems are flagged and counted, never silently fixed or hidden.
 
-<!-- After you push this to GitHub, add the build badge (replace REPO with your repository name):
-[![CI](https://github.com/Franklin254M/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/Franklin254M/REPO/actions) -->
+[![CI](https://github.com/Franklin254M/report-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/Franklin254M/report-generator/actions)
 
 ![Result screen](docs/screenshots/result.png)
 
@@ -22,7 +21,7 @@ flowchart LR
   B["Browser<br/>web/ (HTML, CSS, JS)"] -->|upload, status, download| A["api.py<br/>FastAPI routes"]
   A --> J["jobs.py<br/>job storage, limits, expiry"]
   J --> P["pipeline.py"]
-  P --> I[ingest] --> PR[profile] --> C["clean<br/>(rules.yaml)"] --> S[summarize] --> R["render<br/>Excel"]
+  P --> I[ingest] --> PR[profile] --> C["clean<br/>(rules.yaml)"] --> S[summarize] --> R["render<br/>Excel + optional PDF"]
   J --> D[("data/jobs/uuid/<br/>input, outputs, job.json")]
   P --> D
 ```
@@ -38,7 +37,7 @@ Or use the pipeline directly from the command line:
 
     python -m app.pipeline samples/messy_finance_transactions.csv --out data/jobs/demo
 
-Outputs in the job folder: `report.xlsx`, `clean.csv`, `log.md`, `job.json`, and `review_duplicates.csv` when needed.
+Outputs in the job folder: `report.xlsx`, `report.pdf`, `clean.csv`, `log.md`, `job.json`, and `review_duplicates.csv` when needed.
 If the Excel build ever fails, the job still succeeds with the CSV and log, and `job.json` carries a warning.
 Exit codes: 0 done, 2 needs a column mapping, 1 failed.
 
@@ -63,6 +62,11 @@ Share of input rows with a valid date, a valid amount, and no outlier flag. Remo
 - Text starting with `=`, `+`, `-`, `@` is stored as text so it can never run as a formula. (`clean.csv` is not escaped; open it as data, not as a trusted spreadsheet.)
 - `samples/example_report.xlsx` is a real output with values already calculated.
 
+## PDF report (optional)
+`app/pdf.py` builds a short summary (score, what was fixed, what to check, totals by category) with reportlab and built-in fonts.
+It never blocks anything: if reportlab is missing or the PDF fails, the job still succeeds with the Excel, CSV and log, and `job.json` carries a warning.
+Download kind: `pdf`.
+
 ## Known limit (Tier 2)
 Misspelled categories (Entertainmnt, Shoping) still appear as separate rows in the category totals.
 
@@ -75,7 +79,7 @@ Interactive docs at http://127.0.0.1:8000/docs while the server runs.
 | `POST /api/jobs` | Upload a CSV (form field `file`, optional `date_order`); returns the job |
 | `GET /api/jobs/{id}` | Status, results, and download links |
 | `POST /api/jobs/{id}/rerun` | Re-run with `{date_column, amount_column, date_order}` |
-| `GET /api/jobs/{id}/files/{xlsx|csv|log|review}` | Download (`pdf` returns "not available" until step 6) |
+| `GET /api/jobs/{id}/files/{xlsx|pdf|csv|log|review}` | Download (`pdf` is absent if the optional PDF could not be built) |
 | `DELETE /api/jobs/{id}` | Delete now |
 | `GET /api/health` | Liveness |
 
@@ -108,9 +112,10 @@ One system font stack, 6px corners, no shadows.
 ## Tests and quality checks
     pip install -r requirements-dev.txt
     ruff check .
-    python -m unittest discover -s tests -t .          # 41 tests; the HTTP ones skip themselves if FastAPI is missing
+    python -m unittest discover -s tests -t .          # 47 tests; the HTTP ones skip themselves if FastAPI is missing
 
 GitHub Actions (`.github/workflows/ci.yml`) runs the same two commands on Python 3.11 and 3.13 for every push.
 
-## Next (step 6)
-PDF report (optional; Excel and CSV are always delivered even if the PDF fails).
+## Scope
+This is a portfolio project that runs on your own machine, not a hosted service. It has no accounts or database on purpose, and uploads are
+deleted after 24 hours. Nothing in it is meant to be exposed to the public internet as is. Licensed under MIT.

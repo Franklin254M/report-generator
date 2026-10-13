@@ -18,6 +18,11 @@ from app.clean import clean_frame, detect_date_order, remove_duplicates
 from app.ingest import PipelineError, read_csv
 from app.profile import find_columns
 from app.render import write_excel
+
+try:  # the PDF is optional: without reportlab the job simply has no PDF
+    from app.pdf import write_pdf
+except ImportError:
+    write_pdf = None
 from app.summarize import build_issues, quality_score
 
 DEFAULT_RULES = Path(__file__).with_name("rules.yaml")
@@ -32,7 +37,7 @@ def write_json_atomic(path: Path, data: dict) -> None:
     os.replace(tmp, path)
 
 
-OUTPUT_FILES = ("report.xlsx", "clean.csv", "log.md", "review_duplicates.csv")
+OUTPUT_FILES = ("report.xlsx", "report.pdf", "clean.csv", "log.md", "review_duplicates.csv")
 
 
 def run(input_path, out_dir, *, date_order=None, date_column=None, amount_column=None,
@@ -103,6 +108,13 @@ def run(input_path, out_dir, *, date_order=None, date_column=None, amount_column
             job["files"].insert(0, "report.xlsx")
         except Exception as exc:  # the CSV and log are still delivered
             job["warnings"].append(f"The Excel report couldn't be built ({type(exc).__name__}); CSV and log are ready.")
+        if write_pdf is not None:
+            try:
+                write_pdf(out_dir / "report.pdf", job, cleaned, mapping)
+                job["files"].insert(1 if "report.xlsx" in job["files"] else 0, "report.pdf")
+            except Exception as exc:  # never let the optional PDF block the rest
+                (out_dir / "report.pdf").unlink(missing_ok=True)
+                job["warnings"].append(f"The PDF couldn't be built ({type(exc).__name__}); the other files are ready.")
         job["status"] = "done"
     except PipelineError as err:
         job["status"] = "failed"

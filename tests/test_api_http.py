@@ -7,6 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+HAVE_PDF = importlib.util.find_spec("reportlab") is not None
 HAVE_WEB = all(importlib.util.find_spec(m) for m in ("fastapi", "httpx", "multipart"))
 SAMPLE = Path(__file__).resolve().parent / "messy_sample.csv"
 
@@ -83,9 +84,15 @@ class HttpTests(unittest.TestCase):
         ok = self.client.post(f"/api/jobs/{job['id']}/rerun", json={"amount_column": "total"})
         self.assertEqual(ok.json()["status"], "done")
 
-    def test_pdf_not_yet_and_delete(self):
+    def test_pdf_download_and_delete(self):
         job = self.upload().json()
-        self.assertError(self.client.get(f"/api/jobs/{job['id']}/files/pdf"), 404, "file_not_available")
+        pdf = self.client.get(f"/api/jobs/{job['id']}/files/pdf")
+        if HAVE_PDF:
+            self.assertEqual(pdf.status_code, 200)
+            self.assertTrue(pdf.headers["content-type"].startswith("application/pdf"))
+            self.assertTrue(pdf.content.startswith(b"%PDF"))
+        else:
+            self.assertError(pdf, 404, "file_not_available")
         self.assertEqual(self.client.delete(f"/api/jobs/{job['id']}").status_code, 204)
         self.assertError(self.client.get(f"/api/jobs/{job['id']}"), 404, "job_not_found")
 

@@ -23,6 +23,7 @@ CHUNK = 64 * 1024
 ERROR_STATUS = {"file_too_large": 413, "too_many_rows": 413, "empty_file": 422, "not_a_csv": 422}
 FILES = {  # kind -> (file on disk, media type, download suffix)
     "xlsx": ("report.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "report.xlsx"),
+    "pdf": ("report.pdf", "application/pdf", "report.pdf"),
     "csv": ("clean.csv", "text/csv", "clean.csv"),
     "log": ("log.md", "text/markdown", "log.md"),
     "review": ("review_duplicates.csv", "text/csv", "review.csv"),
@@ -158,9 +159,6 @@ class JobStore:
 
     def file(self, job_id: str, kind: str):
         job = self.get(job_id)
-        if kind == "pdf":
-            raise ApiError(404, "file_not_available", "PDF reports aren't available yet.",
-                           "Download the Excel report instead.")
         if kind not in FILES:  # whitelist: nothing else can ever be served
             raise ApiError(404, "unknown_file", "That isn't a file we produce.",
                            "Use one of: " + ", ".join(FILES))

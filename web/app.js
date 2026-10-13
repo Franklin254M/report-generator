@@ -155,6 +155,7 @@ function doneView(job) {
     (job.warnings || []).map((w) => h("p", { class: "notice" }, w)),
     h("div", { class: "actions" },
       d.xlsx ? h("a", { class: "btn primary", href: d.xlsx, download: "" }, "Download Excel") : null,
+      d.pdf ? fileButton("Download PDF", d.pdf) : null,
       d.csv ? fileButton("Download CSV", d.csv) : null,
       d.log ? fileButton("Cleaning log", d.log) : null,
       d.review ? fileButton("Review list", d.review) : null,

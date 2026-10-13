@@ -1,4 +1,5 @@
 """Service-layer tests: the API's logic with no web framework. Run: python -m unittest discover -s tests -t ."""
+import importlib.util
 import io
 import json
 import tempfile
@@ -10,6 +11,7 @@ from unittest import mock
 from app import ingest
 from app.jobs import ApiError, JobStore, safe_name
 
+HAVE_PDF = importlib.util.find_spec("reportlab") is not None
 SAMPLE = Path(__file__).resolve().parent / "messy_sample.csv"
 NO_AMOUNT = b"date,merchant,total\n2023-01-01,A,5\n2023-01-02,B,7\n"
 
@@ -47,7 +49,7 @@ class JobStoreTests(unittest.TestCase):
         job = self.upload()
         self.assertEqual(job["status"], "done")
         self.assertEqual(job["input"]["filename"], "sample.csv")
-        self.assertEqual(set(job["downloads"]), {"xlsx", "csv", "log", "review"})
+        self.assertEqual(set(job["downloads"]), {"xlsx", "csv", "log", "review"} | ({"pdf"} if HAVE_PDF else set()))
         self.assertTrue(job["downloads"]["csv"].endswith(f"/api/jobs/{job['id']}/files/csv"))
         self.assertEqual(len(self.folders()), 1)
 
@@ -128,9 +130,37 @@ class JobStoreTests(unittest.TestCase):
         path, media, name = self.store.file(job["id"], "csv")
         self.assertEqual((path.name, media, name), ("clean.csv", "text/csv", "sample_clean.csv"))
         self.assertEqual(self.store.file(job["id"], "xlsx")[2], "sample_report.xlsx")
-        self.assertApiError(404, "file_not_available", self.store.file, job["id"], "pdf")
         for sneaky in ("job.json", "../job.json", "input", "input.csv", "..%2Fjob.json"):
             self.assertApiError(404, "unknown_file", self.store.file, job["id"], sneaky)
+
+    @unittest.skipUnless(HAVE_PDF, "reportlab not installed")
+    def test_pdf_download_is_a_real_pdf(self):
+        job = self.upload()
+        path, media, name = self.store.file(job["id"], "pdf")
+        self.assertEqual((media, name), ("application/pdf", "sample_report.pdf"))
+        data = path.read_bytes()
+        self.assertTrue(data.startswith(b"%PDF") and len(data) > 1500)
+
+    @unittest.skipUnless(HAVE_PDF, "reportlab not installed")
+    def test_hostile_filename_cannot_break_the_pdf(self):
+        job = self.upload(name="<b>x</b> & <font size=99>.csv")
+        self.assertIn("pdf", job["downloads"])
+        self.assertEqual(job["warnings"], [])
+
+    def test_pdf_failure_never_blocks_the_other_files(self):
+        with mock.patch("app.pipeline.write_pdf", side_effect=RuntimeError("boom")):
+            job = self.upload()
+        self.assertEqual(job["status"], "done")
+        self.assertTrue(job["warnings"])
+        self.assertNotIn("pdf", job["downloads"])
+        self.assertEqual({"xlsx", "csv", "log", "review"}, set(job["downloads"]))
+        self.assertApiError(404, "file_not_available", self.store.file, job["id"], "pdf")
+
+    def test_missing_pdf_library_is_not_an_error(self):
+        with mock.patch("app.pipeline.write_pdf", None):
+            job = self.upload()
+        self.assertEqual((job["status"], job["warnings"]), ("done", []))
+        self.assertNotIn("pdf", job["downloads"])
 
     def test_review_file_missing_when_there_were_no_duplicates(self):
         clean = b"date,amount\n2023-01-01,5\n2023-01-02,6\n"
